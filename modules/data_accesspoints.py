@@ -113,3 +113,6 @@ def display_method_docstrings(api: Garmin) -> None:
     console.print(table)
     console.print("\nPress any key to continue...", style="bold yellow")
     input()
+
+def merge_activities(api: Garmin) -> None:
+    console.print("Merging activities is not implemented yet.", style="bold red")  # Placeholder for future implementation

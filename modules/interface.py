@@ -20,6 +20,7 @@ from modules.data_accesspoints import (
     get_hrv_data,
     get_activity_for_range,
     display_method_docstrings,
+    merge_activities,
 )
 from modules.menu import Menu
 from modules.client import GarminConnectClient
@@ -75,6 +76,7 @@ class GarminConnectInterface:
         self.menu.add_option("9", "Get active goals")
         self.menu.add_option("0", "Get HRV data for today")
         self.menu.add_option("R", "Get activity data for a date range")
+        self.menu.add_option("M", "Merge activities")
         self.menu.add_option("q", "Exit without logging out")
         self.menu.add_option("Q", "Log session out and exit")
         self.menu.add_option("H", "(Dev options) Display all available methods in Garmin API with docstrings")
@@ -94,6 +96,7 @@ class GarminConnectInterface:
             "0": get_hrv_data,
             "H": display_method_docstrings,
             "R": get_activity_for_range,
+            "M": merge_activities,
         }
 
     def run(self) -> None:
@@ -123,6 +126,7 @@ class GarminConnectInterface:
                     command_func(self.api_client.api)
                 else:
                     console.print(f"Command '{option}' not found.", style="bold red")
+                
             except (
                 GarminConnectConnectionError,
                 GarminConnectAuthenticationError,
