@@ -6,7 +6,8 @@ Author: github.com/bshreyas13
 """
 import logging
 from modules.menu import Menu
-from modules.interface import GarminConnectInterface, CredentialsManager
+from modules.interface import GarminConnectInterface 
+from modules.credentials_manager import CredentialsManager
 from rich.console import Console
 
 # Configure logging
@@ -17,8 +18,5 @@ console = Console()
 
 if __name__ == "__main__":
     creds = CredentialsManager()
-
-    email, password = creds.get_credentials()
-
-    demo = GarminConnectInterface(email, password)
+    demo = GarminConnectInterface(creds)
     demo.run()
