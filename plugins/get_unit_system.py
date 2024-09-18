@@ -2,6 +2,8 @@
 
 from plugins.base_plugin import BasePlugin
 from modules.data_viewer import DataViewer
+from plugins.plugin_types import PluginType
+from enum import Enum
 
 class GetUnitSystemPlugin(BasePlugin):
     @property
@@ -12,6 +14,10 @@ class GetUnitSystemPlugin(BasePlugin):
     def description(self) -> str:
         return "Get unit system"
 
+    @property
+    def plugin_type(self) -> Enum:
+        return PluginType.DATA_RETRIEVAL
+    
     def execute(self, api):
         unit_system = api.get_unit_system()
         DataViewer.display_rich_output("Unit System:", unit_system)

@@ -1,8 +1,8 @@
-# plugins/get_last_ten_activities.py
-
 from plugins.base_plugin import BasePlugin
 from modules.data_viewer import DataViewer
 from rich.console import Console
+from plugins.plugin_types import PluginType
+from enum import Enum
 
 console = Console()
 
@@ -14,7 +14,10 @@ class GetLastTenActivitiesPlugin(BasePlugin):
     @property
     def description(self) -> str:
         return "Get last 10 activities"
-
+    @property
+    def plugin_type(self) -> Enum:
+        return PluginType.DATA_RETRIEVAL
+    
     def execute(self, api):
         last_ten_activities = api.get_activities(0, 10)
         if last_ten_activities:
