@@ -14,20 +14,20 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libssl-dev \
     libffi-dev \
+    git \
     && apt-get clean
 
 # Upgrade pip to the latest version
-RUN python3 -m pip install --upgrade pip
-
-# Install Garmin Connect package (garminconnect)
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python3 -m pip install --upgrade pip 
 
 # Set up a working directory
 WORKDIR /app
 
-# Copy local files to the container's working directory (if needed)
-COPY . /app
+# Clone the GarminConnectInterface repository
+RUN git clone https://github.com/bshreyas13/GarminConnectInterface.git /app
+
+# Install Garmin Connect package (garminconnect) and other requirements
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Default command to run in the container
 CMD ["bash"]
-
