@@ -8,16 +8,30 @@ This application is a command-line interface (CLI) for interacting with the Garm
 
 - Secure login to Garmin Connect using email and password
 - Token-based authentication for subsequent logins
-- Retrieval of various fitness data:
-  - User's full name and unit system
-  - Activity data (daily stats, last 10 activities, specific date range)
-  - Body composition data
-  - Device information
-  - Active goals
-  - Heart Rate Variability (HRV) data
 - Interactive menu for easy navigation
 - Secure credential storage using system keyring
 - Logging functionality for error tracking
+
+The application provides access to the following Garmin Connect data and functionalities:
+
+1. Get full name
+2. Get unit system
+3. Get activity data for today
+4. Get activity data for today (compatible with garminconnect-ha)
+5. Get body composition data for today
+6. Get last 10 activities
+7. Get last activity
+8. Get Garmin devices
+9. Get active goals
+10. Get HRV data for today
+11. Get activity data for a date range
+12. Merge activities
+13. Display all available methods in Garmin API with docstrings (Developer option)
+
+Additional options:
+- Exit without logging out
+- Log session out and exit
+
 
 ## Prerequisites
 
