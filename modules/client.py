@@ -5,8 +5,6 @@ from garminconnect import (
     GarminConnectAuthenticationError,
 )
 from rich.console import Console
-from rich.panel import Panel
-from rich.prompt import Prompt
 import os
 import logging
 

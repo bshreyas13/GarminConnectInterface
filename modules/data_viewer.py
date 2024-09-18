@@ -8,11 +8,28 @@ from rich.syntax import Syntax
 import json
 
 class DataViewer:
+    """
+    A class to visualize activity data using the rich library.
+
+    Attributes:
+        data (List[Dict[str, Any]]): A list of dictionaries containing activity data.
+        console (Console): An instance of rich.console.Console for rendering output.
+    """
+
     def __init__(self, data: List[Dict[str, Any]]):
+        """
+        Initializes the DataViewer with activity data.
+
+        Args:
+            data (List[Dict[str, Any]]): A list of dictionaries containing activity data.
+        """
         self.data = data
         self.console = Console()
 
     def view_data(self) -> None:
+        """
+        Displays the activity data in a formatted manner using rich library components.
+        """
         for i, activity in enumerate(self.data, 1):
             self.console.print(Panel(f"[bold cyan]Activity {i}[/bold cyan]", expand=False))
             
@@ -43,6 +60,15 @@ class DataViewer:
             self.console.print("\n" + "="*50 + "\n")
 
     def _add_dict_to_tree(self, data: Dict[str, Any], tree: Tree, max_depth: int = 2, current_depth: int = 0):
+        """
+        Recursively adds dictionary data to a rich.tree.Tree object.
+
+        Args:
+            data (Dict[str, Any]): The dictionary data to add to the tree.
+            tree (Tree): The rich.tree.Tree object to add data to.
+            max_depth (int, optional): The maximum depth to traverse in the dictionary. Defaults to 2.
+            current_depth (int, optional): The current depth in the dictionary traversal. Defaults to 0.
+        """
         if current_depth >= max_depth:
             return
 
@@ -56,8 +82,16 @@ class DataViewer:
                     self._add_dict_to_tree(value[0], branch, max_depth, current_depth + 1)
             else:
                 tree.add(Text(f"{key}: ", "yellow") + Text(str(value), "green"))
+
     @staticmethod
     def display_rich_output(api_call: str, output: Any) -> None:
+        """
+        Displays the output of an API call in a formatted manner using rich library components.
+
+        Args:
+            api_call (str): The API call description.
+            output (Any): The output data to display, can be a dictionary, list, or any other type.
+        """
         console = Console()
         console.print(Panel(api_call, border_style="bold cyan"))
         

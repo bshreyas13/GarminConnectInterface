@@ -7,7 +7,7 @@ Author: github.com/bshreyas13
 
 import logging
 from typing import Dict, Callable
-from modules.data_accesspoints import (
+from modules.data_utils import (
     get_full_name,
     get_unit_system,
     get_stats,
@@ -19,7 +19,7 @@ from modules.data_accesspoints import (
     get_active_goals,
     get_hrv_data,
     get_activity_for_range,
-    display_method_docstrings,
+    get_all_methods,
     merge_activities,
 )
 from modules.menu import Menu
@@ -65,6 +65,13 @@ class GarminConnectInterface:
         self._setup_commands()
 
     def _setup_menu(self) -> None:
+        """
+        Sets up the menu options for the application.
+        
+        This method adds various options to the menu, each corresponding to a specific action
+        that the user can perform, such as getting activity data, body composition data, or 
+        logging out.
+        """
         self.menu.add_option("1", "Get full name")
         self.menu.add_option("2", "Get unit system")
         self.menu.add_option("3", "Get activity data for today")
@@ -80,9 +87,15 @@ class GarminConnectInterface:
         self.menu.add_option("q", "Exit without logging out")
         self.menu.add_option("Q", "Log session out and exit")
         self.menu.add_option("H", "(Dev options) Display all available methods in Garmin API with docstrings")
-
-
+    
+    
     def _setup_commands(self) -> None:
+        """
+        Sets up the command mappings for the application.
+        
+        This method maps each menu option to a corresponding function that will be executed
+        when the user selects that option from the menu.
+        """
         self.commands = {
             "1": get_full_name,
             "2": get_unit_system,
@@ -94,12 +107,19 @@ class GarminConnectInterface:
             "8": get_devices,
             "9": get_active_goals,
             "0": get_hrv_data,
-            "H": display_method_docstrings,
+            "H": get_all_methods,
             "R": get_activity_for_range,
             "M": merge_activities,
         }
-
+    
     def run(self) -> None:
+        """
+        Runs the main loop of the application.
+        
+        This method displays the menu, handles user input, and executes the corresponding
+        commands based on the user's selection. It also handles login, logout, and error
+        handling.
+        """
         while True:
             console.print(Panel.fit("Garmin Connect API Demo. Author:bshreyas13", border_style="bold green"))
             
@@ -107,10 +127,10 @@ class GarminConnectInterface:
                 if not self.api_client.login():
                     console.print("Could not login to Garmin Connect, try again later.", style="bold red")
                     break
-
+    
             self.menu.display()
             option = self.menu.get_selection()
-
+    
             if option == "q":
                 console.print("Exiting the program without logging out session. Goodbye!", style="bold blue")
                 break
@@ -119,7 +139,7 @@ class GarminConnectInterface:
                 CredentialsManager().delete_credentials()
                 console.print("Logged out successfully. Goodbye!", style="bold blue")
                 break
-
+    
             try:
                 command_func = self.commands.get(option)
                 if command_func:
@@ -136,16 +156,38 @@ class GarminConnectInterface:
             ) as err:
                 logger.error(err)
                 console.print(f"Error: {err}", style="bold red")
-        
+
 
 class CredentialsManager:
+    """
+    Manages user credentials using the keyring library for secure storage.
+
+    Attributes:
+        KEYRING_SERVICE (str): The name of the keyring service used for storing credentials.
+        email (str): The user's email address.
+        password (str): The user's password.
+    """
+
     KEYRING_SERVICE = "GarminConnect"
 
     def __init__(self):
+        """
+        Initializes the CredentialsManager with email and password set to None.
+        """
         self.email = None
         self.password = None
 
     def get_credentials(self):
+        """
+        Retrieves the user's credentials from the keyring or prompts the user to enter them.
+
+        This method first attempts to retrieve the email and password from the keyring. If the
+        credentials are not found or there is an error accessing the keyring, it prompts the user
+        to enter their email and password. The entered credentials are then stored in the keyring.
+
+        Returns:
+            tuple: A tuple containing the email and password.
+        """
         try:
             # Try to get email and password from keyring
             self.email = keyring.get_password(self.KEYRING_SERVICE, "email")
@@ -170,6 +212,13 @@ class CredentialsManager:
         return self.email, self.password
     
     def delete_credentials(self):
+        """
+        Deletes the stored credentials from the keyring.
+
+        This method attempts to delete the email and password from the keyring. If there is an error
+        during the deletion process, it logs the error and notifies the user.
+
+        """
         KEYRING_SERVICE = "GarminConnect"
         try:
             keyring.delete_password(KEYRING_SERVICE, "email")
