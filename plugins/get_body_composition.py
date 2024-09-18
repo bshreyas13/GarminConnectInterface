@@ -1,0 +1,20 @@
+# plugins/get_body_composition.py
+
+from plugins.base_plugin import BasePlugin
+from modules.data_viewer import DataViewer
+import datetime
+
+class GetBodyCompositionPlugin(BasePlugin):
+    @property
+    def command_key(self) -> str:
+        return "5"
+
+    @property
+    def description(self) -> str:
+        return "Get body composition data for today"
+
+    def execute(self, api):
+        today = datetime.date.today()
+        body_composition = api.get_body_composition(today.isoformat())
+        DataViewer.display_rich_output("Body Composition:", body_composition)
+        return body_composition

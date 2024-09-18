@@ -12,7 +12,7 @@ This application is a command-line interface (CLI) for interacting with the Garm
 - Secure credential storage using system keyring
 - Logging functionality for error tracking
 
-The application provides access to the following Garmin Connect data and functionalities:
+The application provides access to the following Garmin Connect data and functionalities in form of plugins:
 
 1. Get full name
 2. Get unit system
@@ -32,6 +32,7 @@ Additional options:
 - Exit without logging out
 - Log session out and exit
 
+**Note** : The plugin design pattern allows developers to extended access to any feature not listed here. Refere one of `.py` files in `plugins` directory. 
 
 ## Prerequisites
 

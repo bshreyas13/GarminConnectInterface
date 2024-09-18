@@ -7,31 +7,11 @@ Author: github.com/bshreyas13
 
 import logging
 from typing import Dict, Callable
-from modules.data_utils import (
-    get_full_name,
-    get_unit_system,
-    get_stats,
-    get_user_summary,
-    get_body_composition,
-    get_last_ten_activities,
-    get_last_activity,
-    get_devices,
-    get_active_goals,
-    get_hrv_data,
-    get_activity_for_range,
-    get_all_methods,
-    merge_activities,
-)
 from modules.menu import Menu
 from modules.client import GarminConnectClient
-import requests
-from garth.exc import GarthHTTPError
-from garminconnect import (
-    Garmin,
-    GarminConnectAuthenticationError,
-    GarminConnectConnectionError,
-    GarminConnectTooManyRequestsError,
-)
+from plugins.base_plugin import BasePlugin
+import importlib
+import os
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
@@ -43,103 +23,58 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 console = Console()
 
-
 class GarminConnectInterface:
-    """
-    GarminConnectInterface class represents an interface for interacting with the Garmin Connect API.
-    Attributes:
-        api_client (GarminConnectClient): The client for the Garmin Connect API.
-        menu (Menu): The menu object for displaying options.
-        commands (Dict[str, Callable[[Garmin], None]]): A dictionary mapping option strings to command functions.
-    Methods:
-        __init__(self, email: str, password: str): Initializes the GarminConnectInterface object.
-        _setup_menu(self) -> None: Sets up the menu options.
-        _setup_commands(self) -> None: Sets up the command functions.
-        run(self) -> None: Runs the interface loop.
-    """
     def __init__(self, email: str, password: str):
         self.api_client = GarminConnectClient(email, password)
         self.menu = Menu()
-        self.commands: Dict[str, Callable[[Garmin], None]] = {}
+        self.commands: Dict[str, Callable] = {}
+        self.plugins: Dict[str, BasePlugin] = {}
+        self._load_plugins()
         self._setup_menu()
-        self._setup_commands()
 
-    def _setup_menu(self) -> None:
-        """
-        Sets up the menu options for the application.
-        
-        This method adds various options to the menu, each corresponding to a specific action
-        that the user can perform, such as getting activity data, body composition data, or 
-        logging out.
-        """
-        self.menu.add_option("1", "Get full name")
-        self.menu.add_option("2", "Get unit system")
-        self.menu.add_option("3", "Get activity data for today")
-        self.menu.add_option("4", "Get activity data for today (compatible with garminconnect-ha)")
-        self.menu.add_option("5", "Get body composition data for today")
-        self.menu.add_option("6", "Get last 10 activities")
-        self.menu.add_option("7", "Get last activity")
-        self.menu.add_option("8", "Get Garmin devices")
-        self.menu.add_option("9", "Get active goals")
-        self.menu.add_option("0", "Get HRV data for today")
-        self.menu.add_option("R", "Get activity data for a date range")
-        self.menu.add_option("M", "Merge activities")
+    def _load_plugins(self):
+        plugin_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'plugins')
+        for filename in os.listdir(plugin_dir):
+            if filename.endswith('.py') and filename != 'base_plugin.py':
+                module_name = filename[:-3]  # Remove .py extension
+                module = importlib.import_module(f'plugins.{module_name}')
+                for item in dir(module):
+                    item = getattr(module, item)
+                    if isinstance(item, type) and issubclass(item, BasePlugin) and item != BasePlugin:
+                        plugin = item()
+                        self.plugins[plugin.command_key] = plugin
+
+    def _setup_menu(self):
+        sorted_keys = sorted(self.plugins.keys(), key=lambda k: (0, int(k)) if k.isdigit() else (1, k))
+        for key in sorted_keys:
+            plugin = self.plugins[key]
+            self.menu.add_option(key, plugin.description)
+            self.commands[key] = plugin.execute
+
+        # Add exit options
         self.menu.add_option("q", "Exit without logging out")
         self.menu.add_option("Q", "Log session out and exit")
-        self.menu.add_option("H", "(Dev options) Display all available methods in Garmin API with docstrings")
-    
-    
-    def _setup_commands(self) -> None:
-        """
-        Sets up the command mappings for the application.
-        
-        This method maps each menu option to a corresponding function that will be executed
-        when the user selects that option from the menu.
-        """
-        self.commands = {
-            "1": get_full_name,
-            "2": get_unit_system,
-            "3": get_stats,
-            "4": get_user_summary,
-            "5": get_body_composition,
-            "6": get_last_ten_activities,
-            "7": get_last_activity,
-            "8": get_devices,
-            "9": get_active_goals,
-            "0": get_hrv_data,
-            "H": get_all_methods,
-            "R": get_activity_for_range,
-            "M": merge_activities,
-        }
-    
-    def run(self) -> None:
-        """
-        Runs the main loop of the application.
-        
-        This method displays the menu, handles user input, and executes the corresponding
-        commands based on the user's selection. It also handles login, logout, and error
-        handling.
-        """
+
+    def run(self):
         while True:
             console.print(Panel.fit("Garmin Connect API Demo. Author:bshreyas13", border_style="bold green"))
             
             if not self.api_client.api:
                 if not self.api_client.login():
-                    console.print("Could not login to Garmin Connect, try again later.", style="bold red")
+                    console.print(Panel.fit("Could not login to Garmin Connect, try again later.", border_style="bold_red", style="bold red"))
                     break
-    
+
             self.menu.display()
             option = self.menu.get_selection()
-    
+
             if option == "q":
-                console.print("Exiting the program without logging out session. Goodbye!", style="bold blue")
+                console.print(Panel.fit("Exiting the program without logging out session. Goodbye!", border_style="yellow", style="bold blue"))
                 break
             elif option == "Q":
                 self.api_client.logout()
-                CredentialsManager().delete_credentials()
-                console.print("Logged out successfully. Goodbye!", style="bold blue")
+                console.print(Panel.fit("Logged out successfully. Goodbye!", border_style="bold blue", style="bold blue"))
                 break
-    
+
             try:
                 command_func = self.commands.get(option)
                 if command_func:
@@ -147,15 +82,10 @@ class GarminConnectInterface:
                 else:
                     console.print(f"Command '{option}' not found.", style="bold red")
                 
-            except (
-                GarminConnectConnectionError,
-                GarminConnectAuthenticationError,
-                GarminConnectTooManyRequestsError,
-                requests.exceptions.HTTPError,
-                GarthHTTPError
-            ) as err:
+            except Exception as err:
                 logger.error(err)
                 console.print(f"Error: {err}", style="bold red")
+
 
 
 class CredentialsManager:
