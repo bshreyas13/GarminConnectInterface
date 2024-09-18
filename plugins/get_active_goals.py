@@ -1,5 +1,7 @@
 from plugins.base_plugin import BasePlugin
 from modules.data_viewer import DataViewer
+from plugins.plugin_types import PluginType
+from enum import Enum
 
 class GetActiveGoalsPlugin(BasePlugin):
     @property
@@ -10,6 +12,10 @@ class GetActiveGoalsPlugin(BasePlugin):
     def description(self) -> str:
         return "Get active goals"
 
+    @property
+    def plugin_type(self) -> Enum:
+        return PluginType.DATA_RETRIEVAL
+    
     def execute(self, api):
         active_goals = api.get_goals("active")
         DataViewer.display_rich_output("Active Goals:", active_goals)

@@ -17,6 +17,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 import keyring
 from keyring.errors import KeyringError
+from plugins.plugin_types import PluginType
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,8 +30,11 @@ class GarminConnectInterface:
         self.menu = Menu()
         self.commands: Dict[str, Callable] = {}
         self.plugins: Dict[str, BasePlugin] = {}
+        self.retrieval_plugins: list = []
+        self.process_plugins:list = []
         self._load_plugins()
         self._setup_menu()
+        
 
     def _load_plugins(self):
         plugin_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'plugins')
@@ -49,8 +53,12 @@ class GarminConnectInterface:
         for key in sorted_keys:
             plugin = self.plugins[key]
             self.menu.add_option(key, plugin.description)
+            if plugin.plugin_type == PluginType.DATA_RETRIEVAL:
+                self.retrieval_plugins.append(key)
+            elif plugin.plugin_type == PluginType.DATA_PROCESSING:
+                self.process_plugins.append(key)
             self.commands[key] = plugin.execute
-
+            
         # Add exit options
         self.menu.add_option("q", "Exit without logging out")
         self.menu.add_option("Q", "Log session out and exit")
@@ -77,11 +85,19 @@ class GarminConnectInterface:
 
             try:
                 command_func = self.commands.get(option)
-                if command_func:
-                    command_func(self.api_client.api)
-                else:
+                if command_func is None:
                     console.print(f"Command '{option}' not found.", style="bold red")
+                    continue
                 
+                if option in self.retrieval_plugins :
+                   command_func(self.api_client.api)
+                
+                if option in self.process_plugins :
+                    ret_func = self.commands.get('R')
+                    data = ret_func(self.api_client.api) 
+                    command_func(data)
+
+
             except Exception as err:
                 logger.error(err)
                 console.print(f"Error: {err}", style="bold red")

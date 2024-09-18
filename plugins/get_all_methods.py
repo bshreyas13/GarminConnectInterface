@@ -2,6 +2,8 @@ from plugins.base_plugin import BasePlugin
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from plugins.plugin_types import PluginType
+from enum import Enum
 
 console = Console()
 
@@ -13,7 +15,10 @@ class GetAllMethodsPlugin(BasePlugin):
     @property
     def description(self) -> str:
         return "(Dev options) Display all available methods in Garmin API with docstrings"
-
+    @property
+    def plugin_type(self) -> Enum:
+        return PluginType.DATA_RETRIEVAL
+    
     def execute(self, api):
         table = Table(title="Garmin Connect API Methods", show_header=True, header_style="bold magenta")
         table.add_column("Method", style="cyan", no_wrap=True)
