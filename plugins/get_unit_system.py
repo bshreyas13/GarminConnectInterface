@@ -18,7 +18,9 @@ class GetUnitSystemPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         unit_system = api.get_unit_system()
-        DataViewer.display_rich_output("Unit System:", unit_system)
+        if display:
+            DataViewer.display_rich_output("Unit System:", unit_system)
+
         return unit_system

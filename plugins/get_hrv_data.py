@@ -17,9 +17,11 @@ class GetHRVDataPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         today = datetime.date.today()
         hrv_data = api.get_hrv_data(today.isoformat())
-        DataViewer.display_rich_output("HRV Data:", hrv_data)
+        if display:
+            DataViewer.display_rich_output("HRV Data:", hrv_data)
+
         return hrv_data
     

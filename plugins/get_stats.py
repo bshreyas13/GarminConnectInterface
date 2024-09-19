@@ -17,9 +17,10 @@ class GetStatsPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         today = datetime.date.today()
         stats = api.get_stats(today.isoformat())
-        DataViewer.display_rich_output("Stats:", stats)
+        if display:
+            DataViewer.display_rich_output("Stats:", stats)
         return stats
     

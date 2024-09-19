@@ -19,11 +19,13 @@ class GetLastActivityPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         last_activity = api.get_last_activity()
-        if last_activity:
+        if not last_activity:
+            console.print("No last activity found.", style="bold yellow")
+            return None
+        if display:
             viewer = DataViewer([last_activity])
             viewer.view_data()
-        else:
-            console.print("No last activity found.", style="bold yellow")
+        
         return last_activity

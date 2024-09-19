@@ -17,9 +17,10 @@ class GetFullNamePlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         full_name = api.get_full_name()
-        DataViewer.display_rich_output("Full Name:", full_name)
+        if display:
+            DataViewer.display_rich_output("Full Name:", full_name)
         return full_name
     
 

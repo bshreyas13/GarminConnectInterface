@@ -18,11 +18,13 @@ class GetLastTenActivitiesPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         last_ten_activities = api.get_activities(0, 10)
-        if last_ten_activities:
+        if not last_ten_activities:
+            console.print("No activities found.", style="bold yellow")
+            return None
+        if display:
             viewer = DataViewer(last_ten_activities)
             viewer.view_data()
-        else:
-            console.print("No activities found.", style="bold yellow")
+            
         return last_ten_activities

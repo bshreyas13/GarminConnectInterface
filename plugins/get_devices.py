@@ -16,7 +16,8 @@ class GetDevicesPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         devices = api.get_devices()
-        DataViewer.display_rich_output("Devices:", devices)
+        if display:
+            DataViewer.display_rich_output("Devices:", devices)
         return devices

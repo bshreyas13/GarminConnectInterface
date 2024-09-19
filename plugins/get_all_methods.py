@@ -19,7 +19,7 @@ class GetAllMethodsPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         table = Table(title="Garmin Connect API Methods", show_header=True, header_style="bold magenta")
         table.add_column("Method", style="cyan", no_wrap=True)
         table.add_column("Description", style="green")

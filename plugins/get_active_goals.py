@@ -16,7 +16,9 @@ class GetActiveGoalsPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         active_goals = api.get_goals("active")
-        DataViewer.display_rich_output("Active Goals:", active_goals)
+        if display:
+            DataViewer.display_rich_output("Active Goals:", active_goals)
+
         return active_goals

@@ -15,7 +15,7 @@ import os
 from rich.console import Console
 from rich.panel import Panel
 from modules.credentials_manager import CredentialsManager
-
+import traceback
 from plugins.plugin_types import PluginType
 
 # Configure logging
@@ -70,7 +70,9 @@ class GarminConnectInterface:
             
             if not self.api_client.api:
                 if not self.api_client.login():
-                    console.print(Panel.fit("Could not login to Garmin Connect, try again later.", border_style="bold_red", style="bold red"))
+                    
+                    console.print(Panel.fit("Could not login to Garmin Connect, invalid credentials.", border_style="bold red", style="bold red"))
+                    self.credentials_manager.delete_credentials()
                     break
 
             self.menu.display()
@@ -78,6 +80,7 @@ class GarminConnectInterface:
 
             if option == "q":
                 console.print(Panel.fit("Exiting the program without logging out session. Goodbye!", border_style="yellow", style="bold blue"))
+                
                 break
             elif option == "Q":
                 self.api_client.logout()
@@ -96,13 +99,14 @@ class GarminConnectInterface:
                 
                 if option in self.process_plugins :
                     ret_func = self.commands.get('R')
-                    data = ret_func(self.api_client.api) 
-                    command_func(data)
-
+                    data = ret_func(self.api_client.api, display=False) 
+                    merged_data = command_func(self.api_client.api, data)
+                    print(len(merged_data))
+                    print(merged_data[0]["geoPolylineDTO"]["polyline"][:5])
 
             except Exception as err:
                 logger.error(err)
-                console.print(f"Error: {err}", style="bold red")
+                console.print(f"Error: {traceback.format_exc()}", style="bold red")
 
 
 

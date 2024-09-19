@@ -18,8 +18,10 @@ class GetUserSummaryPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         today = datetime.date.today()
         user_summary = api.get_user_summary(today.isoformat())
-        DataViewer.display_rich_output("User Summary:", user_summary)
+        if display:
+            DataViewer.display_rich_output("User Summary:", user_summary)
+
         return user_summary

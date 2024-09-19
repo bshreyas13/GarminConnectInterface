@@ -21,7 +21,7 @@ class GetActivityForRangePlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         def get_valid_date(prompt_text: str) -> str:
             while True:
                 date_str = Prompt.ask(prompt_text)
@@ -40,11 +40,13 @@ class GetActivityForRangePlugin(BasePlugin):
         else:
             activities = api.get_activities_by_date(start_date, end_date, activity_type)
 
-
-        if activities:
+        if not activities:
+            console.print("No activities found for the given date range.", style="bold yellow")
+            return []
+        
+        if display:
             viewer = DataViewer(activities)
             viewer.view_data()
-        else:
-            console.print(f"No activities found between {start_date} and {end_date}.", style="bold yellow")
-    
+        
+        
         return activities

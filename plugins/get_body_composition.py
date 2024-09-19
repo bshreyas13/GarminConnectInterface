@@ -18,8 +18,9 @@ class GetBodyCompositionPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_RETRIEVAL
     
-    def execute(self, api):
+    def execute(self, api, display=True):
         today = datetime.date.today()
         body_composition = api.get_body_composition(today.isoformat())
-        DataViewer.display_rich_output("Body Composition:", body_composition)
+        if display:
+            DataViewer.display_rich_output("Body Composition:", body_composition)
         return body_composition

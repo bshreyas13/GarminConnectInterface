@@ -1,5 +1,7 @@
 from plugins.base_plugin import BasePlugin
 from rich.console import Console
+from rich.prompt import Prompt
+from rich.panel import Panel
 from modules.data_viewer import DataViewer
 from plugins.plugin_types import PluginType
 from enum import Enum
@@ -19,6 +21,21 @@ class MergeActivitiesPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_PROCESSING
     
-    def execute(self, activities):
-        # DataViewer.display_rich_output("Merging Activities", activities)
-        console.print("Merging activities is not implemented yet.", style="bold red")
+    def execute(self, api, activities,display=True):
+        merged_data = []
+        activityIds = [a.get("activityId") for a in activities]
+        if display:
+            DataViewer.display_rich_output(f"Found {len(activities)} activities with listed Ids", activityIds)
+        
+        for idx, activity_id in enumerate(activityIds):
+            activity_details = api.get_activity_details(activity_id)
+            
+            
+            # data_field = Prompt.ask("Please enter the data field to merge (default is geoPolylineDTO):", default='geoPolylineDTO') if idx == 0 else data_field
+
+            merged_data.append(activity_details)
+        if display:
+            DataViewer.display_rich_output(f"Details avaialable for each activity:", list(activity_details.keys()))
+            
+        console.print(Panel.fit(f"Merged activity details for {len(activities)} activities.", border_style= 'green', style="bold Green"))
+        return merged_data
