@@ -22,18 +22,15 @@ class MergeActivitiesPlugin(BasePlugin):
         return PluginType.DATA_PROCESSING
     
     def execute(self, api, activities,display=True):
-        merged_data = []
-        activityIds = [a.get("activityId") for a in activities]
-        if display:
-            DataViewer.display_rich_output(f"Found {len(activities)} activities with listed Ids", activityIds)
         
-        for idx, activity_id in enumerate(activityIds):
-            activity_details = api.get_activity_details(activity_id)
+        activity_ids = [a.get("activityId") for a in activities]
+        if display:
+            DataViewer.display_rich_output(f"Found {len(activities)} activities with listed Ids", activity_ids)
+        
+        merged_data = [ api.get_activity_details(activity_id) for activity_id in activity_ids]
+        
+        activity_details = api.get_activity_details(activity_ids[-1])
             
-            
-            # data_field = Prompt.ask("Please enter the data field to merge (default is geoPolylineDTO):", default='geoPolylineDTO') if idx == 0 else data_field
-
-            merged_data.append(activity_details)
         if display:
             DataViewer.display_rich_output(f"Details avaialable for each activity:", list(activity_details.keys()))
             
