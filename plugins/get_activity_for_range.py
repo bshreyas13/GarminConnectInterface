@@ -22,8 +22,10 @@ class GetActivityForRangePlugin(BasePlugin):
         return PluginType.DATA_RETRIEVAL
     
     def execute(self, api, display=True):
-        def get_valid_date(prompt_text: str) -> str:
+        def get_valid_date(prompt_text: str, start_date_:str = None) -> str:
             while True:
+                if 'end date' in prompt_text.lower() and start_date_:
+                    date_str = Prompt.ask(prompt_text, default=start_date_)
                 date_str = Prompt.ask(prompt_text)
                 try:
                     datetime.strptime(date_str, "%Y-%m-%d")
@@ -32,7 +34,7 @@ class GetActivityForRangePlugin(BasePlugin):
                     console.print("Invalid date format. Please enter the date in YYYY-MM-DD format.", style="bold red")
 
         start_date = get_valid_date("Enter start date (YYYY-MM-DD)")
-        end_date = get_valid_date("Enter end date (YYYY-MM-DD)")
+        end_date = get_valid_date("Enter end date (YYYY-MM-DD) (Optional). Default is start date", start_date)
         activity_type = Prompt.ask("Enter activity type (optional)", default=None)
 
         if activity_type is None:

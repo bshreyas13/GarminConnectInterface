@@ -32,7 +32,7 @@ Additional options:
 - Exit without logging out
 - Log session out and exit
 
-**Note** : The plugin design pattern allows developers to extended access to any feature not listed here. Refere one of `.py` files in `plugins` directory. 
+**Note** : The plugin design pattern allows developers to extended access to any feature not listed here. Refer one of `.py` files in `plugins` directory. 
 
 ## Prerequisites
 
@@ -45,8 +45,8 @@ Additional options:
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/garmin-connect-demo.git
-   cd garmin-connect-demo
+   git clone https://github.com/bshreyas13/GarminConnectInterface.git
+   cd GarminConnectInterface
    ```
 
 2. Install the required dependencies:

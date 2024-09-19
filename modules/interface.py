@@ -103,7 +103,8 @@ class GarminConnectInterface:
                     merged_data = command_func(self.api_client.api, data)
                     print(len(merged_data))
                     print(merged_data[0]["geoPolylineDTO"]["polyline"][:5])
-
+            ## TODO : Implement a plugin to take merged data and plot it on a map
+            # data_field = Prompt.ask("Please enter the data field to merge (default is geoPolylineDTO):", default='geoPolylineDTO') if idx == 0 else data_field
             except Exception as err:
                 logger.error(err)
                 console.print(f"Error: {traceback.format_exc()}", style="bold red")
