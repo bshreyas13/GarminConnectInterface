@@ -97,8 +97,11 @@ class VisualizerPlugin(BasePlugin):
         folium.LayerControl().add_to(map_object)
         # folium.TileLayer('Esri.WorldImagery').add_to(map_object)
         # Create PolyLine to connect the points into a line
-        polyline_points = [(point["lat"], point["lon"]) for point in merged_gps_data]
-        folium.PolyLine(locations=polyline_points, color="blue", weight=2.5).add_to(map_object)
+        polyline = [(point["lat"], point["lon"]) for point in merged_gps_data]
+        folium.PolyLine(locations=polyline, color="blue", weight=2.5).add_to(map_object)
+        # Optionally add markers for start and end points
+        folium.Marker(location=[polyline[0][0], polyline[0][1]], popup="Start", icon=folium.Icon(color='green')).add_to(map_object)
+        folium.Marker(location=[polyline[-1][0], polyline[-1][1]], popup="End", icon=folium.Icon(color='red')).add_to(map_object)
 
         # Prepare data for TimestampedGeoJson
         features = []
