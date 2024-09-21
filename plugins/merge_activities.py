@@ -22,14 +22,17 @@ class MergeActivitiesPlugin(BasePlugin):
         return PluginType.DATA_PROCESSING
     
     def execute(self, api, activities,display=True):
-        
-        activity_ids = [a.get("activityId") for a in activities]
+        merged_data = []
+        activity_ids = [(a.get("activityId"),a.get('startTimeLocal')) for a in activities]
         if display:
             DataViewer.display_rich_output(f"Found {len(activities)} activities with listed Ids", activity_ids)
         
-        merged_data = [ api.get_activity_details(activity_id) for activity_id in activity_ids]
+        # merged_data = [ api.get_activity_details(activity_id[0])['startTimeLocal']=activity_id[1] for activity_id in activity_ids]
+        for activity_id, time_str in activity_ids:
+            activity_details = api.get_activity_details(activity_id)
+            activity_details['startTimeLocal']=time_str
+            merged_data.append(activity_details)
         
-        activity_details = api.get_activity_details(activity_ids[-1])
             
         if display:
             DataViewer.display_rich_output(f"Details avaialable for each activity:", list(activity_details.keys()))

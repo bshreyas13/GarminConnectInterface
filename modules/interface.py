@@ -33,6 +33,11 @@ class GarminConnectInterface:
         self.plugins: Dict[str, BasePlugin] = {}
         self.retrieval_plugins: list = []
         self.process_plugins:list = []
+        self.secondary_process_plugins:list = []
+        self.visualizer_plugins:list = []
+        self.primary_data = None
+        self.secondary_data = None
+        
         self._load_plugins()
         self._setup_menu()
         
@@ -58,6 +63,11 @@ class GarminConnectInterface:
                 self.retrieval_plugins.append(key)
             elif plugin.plugin_type == PluginType.DATA_PROCESSING:
                 self.process_plugins.append(key)
+            elif plugin.plugin_type == PluginType.SECONDARY_PROCESSING:
+                self.secondary_process_plugins.append(key)
+            elif plugin.plugin_type == PluginType.DATA_VISUALIZATION:
+                self.visualizer_plugins.append(key)
+
             self.commands[key] = plugin.execute
             
         # Add exit options
@@ -65,9 +75,12 @@ class GarminConnectInterface:
         self.menu.add_option("Q", "Log session out and exit")
 
     def run(self):
+        begin = True
         while True:
-            console.print(Panel.fit("Garmin Connect API Demo. Author:bshreyas13", border_style="bold green"))
-            
+            if begin:
+                console.print(Panel.fit("Garmin Connect API Demo. Author:bshreyas13", border_style="bold green"))
+                begin = False
+
             if not self.api_client.api:
                 if not self.api_client.login():
                     
@@ -90,19 +103,31 @@ class GarminConnectInterface:
 
             try:
                 command_func = self.commands.get(option)
+                
                 if command_func is None:
                     console.print(f"Command '{option}' not found.", style="bold red")
                     continue
                 
                 if option in self.retrieval_plugins :
-                   command_func(self.api_client.api)
+                   self.primary_data = command_func(self.api_client.api)
                 
                 if option in self.process_plugins :
                     ret_func = self.commands.get('R')
                     data = ret_func(self.api_client.api, display=False) 
                     merged_data = command_func(self.api_client.api, data)
-                    print(len(merged_data))
-                    print(merged_data[0]["geoPolylineDTO"]["polyline"][:5])
+                    self.primary_data = merged_data
+
+                if option in self.secondary_process_plugins and self.primary_data:
+                    self.secondary_data = command_func(self.api_client.api, self.primary_data)
+
+                elif option in self.secondary_process_plugins and not self.primary_data:
+                    console.print(Panel.fit(f"No data to process. Please run a data retrieval {self.retrieval_plugins} or processing {self.process_plugins} first.", border_style="bold yellow", style="bold yellow"))
+
+                if option in self.visualizer_plugins and self.secondary_data:
+                    command_func(self.secondary_data)
+                elif option in self.visualizer_plugins and not self.secondary_data:
+                    console.print(Panel.fit(f"No data to visualize. Please run first 2 steps (retrival/processing{self.process_plugins},{self.retrieval_plugins} and data handling {self.secondary_process_plugins} first.", border_style="bold yellow", style="bold yellow"))
+            
             ## TODO : Implement a plugin to take merged data and plot it on a map
             # data_field = Prompt.ask("Please enter the data field to merge (default is geoPolylineDTO):", default='geoPolylineDTO') if idx == 0 else data_field
             except Exception as err:
