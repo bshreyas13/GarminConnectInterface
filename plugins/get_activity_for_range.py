@@ -26,7 +26,8 @@ class GetActivityForRangePlugin(BasePlugin):
             while True:
                 if 'end date' in prompt_text.lower() and start_date_:
                     date_str = Prompt.ask(prompt_text, default=start_date_)
-                date_str = Prompt.ask(prompt_text)
+                else:
+                    date_str = Prompt.ask(prompt_text)
                 try:
                     datetime.strptime(date_str, "%Y-%m-%d")
                     return date_str
