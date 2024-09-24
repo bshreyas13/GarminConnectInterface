@@ -114,19 +114,25 @@ class GarminConnectInterface:
                 if option in self.process_plugins :
                     ret_func = self.commands.get('R')
                     data = ret_func(self.api_client.api, display=False) 
-                    merged_data = command_func(self.api_client.api, data)
-                    self.primary_data = merged_data
+                    merged_activies = command_func(self.api_client.api, data)
+                    self.primary_data = merged_activies
 
                 if option in self.secondary_process_plugins and self.primary_data:
-                    self.secondary_data = command_func(self.api_client.api, self.primary_data)
+                    merged_data = command_func(self.api_client.api, self.primary_data)
+                    self.secondary_data = merged_data
 
                 elif option in self.secondary_process_plugins and not self.primary_data:
-                    console.print(Panel.fit(f"No data to process. Please run a data retrieval {self.retrieval_plugins} or processing {self.process_plugins} first.", border_style="bold yellow", style="bold yellow"))
+                    ret_func = self.commands.get('R')
+                    data = ret_func(self.api_client.api, display=False) 
+                    merged_activies = self.commands.get('M')(self.api_client.api, data)
+                    self.primary_data = merged_activies
+                    merged_data = command_func(self.api_client.api, self.primary_data)
+                    self.secondary_data = merged_data
 
                 if option in self.visualizer_plugins and self.secondary_data:
                     command_func(self.secondary_data)
                 elif option in self.visualizer_plugins and not self.secondary_data:
-                    console.print(Panel.fit(f"No data to visualize. Please run first 2 steps (retrival/processing{self.process_plugins},{self.retrieval_plugins} and data handling {self.secondary_process_plugins} first.", border_style="bold yellow", style="bold yellow"))
+                    console.print(Panel.fit(f"No data to visualize. Please run first 2 steps (retrival/processing{self.process_plugins},{self.retrieval_plugins} ot data merging {self.secondary_process_plugins} first.", border_style="bold yellow", style="bold yellow"))
             
             ## TODO : Implement a plugin to take merged data and plot it on a map
             # data_field = Prompt.ask("Please enter the data field to merge (default is geoPolylineDTO):", default='geoPolylineDTO') if idx == 0 else data_field

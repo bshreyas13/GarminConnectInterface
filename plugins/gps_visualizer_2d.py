@@ -1,56 +1,3 @@
-# import folium
-# from plugins.base_plugin import BasePlugin
-# from rich.console import Console
-# from rich.panel import Panel
-# from enum import Enum
-# from plugins.plugin_types import PluginType
-
-# console = Console()
-
-# class GPSVisualizerPlugin(BasePlugin):
-#     @property
-#     def command_key(self) -> str:
-#         return "V"
-
-#     @property
-#     def description(self) -> str:
-#         return "Visualize merged GPS data on a map"
-
-#     @property
-#     def plugin_type(self) -> Enum:
-#         return PluginType.DATA_VIZUALIZATION
-
-#     def execute(self, merged_gps_data, map_output_file="merged_map.html", display=True):
-#         # Check if there's GPS data to visualize
-#         if not merged_gps_data or len(merged_gps_data) == 0:
-#             console.print("No GPS data to visualize.", style="bold red")
-#             return
-        
-#         # Extract the starting point for initializing the map
-#         starting_point = merged_gps_data[0]
-#         lat = starting_point.get("lat")
-#         lon = starting_point.get("lon")
-
-#         # Initialize the map centered at the starting point
-#         map_object = folium.Map(location=[lat, lon], zoom_start=13)
-
-#         # Add polyline (GPS track) to the map
-#         polyline = []
-#         polyline = [(point.get("lat"), point.get("lon")) for point in merged_gps_data if point not in polyline]
-#         folium.PolyLine(polyline, color="blue", weight=2.5, opacity=1).add_to(map_object)
-
-#         # Optionally add markers for start and end points
-#         folium.Marker(location=[polyline[0][0], polyline[0][1]], popup="Start", icon=folium.Icon(color='green')).add_to(map_object)
-#         folium.Marker(location=[polyline[-1][0], polyline[-1][1]], popup="End", icon=folium.Icon(color='red')).add_to(map_object)
-
-#         # Save the map to an HTML file
-#         map_object.save(map_output_file)
-
-#         if display:
-#             console.print(Panel(f"Map has been created and saved to {map_output_file}", style="bold green"))
-
-#         return map_output_file
-
 import folium
 from folium.plugins import TimestampedGeoJson
 from plugins.base_plugin import BasePlugin
@@ -61,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 console = Console()
 
-class VisualizerPlugin(BasePlugin):
+class GPSVisualizer2dPlugin(BasePlugin):
     @property
     def command_key(self) -> str:
         return "V"
@@ -74,14 +21,17 @@ class VisualizerPlugin(BasePlugin):
     def plugin_type(self) -> Enum:
         return PluginType.DATA_VISUALIZATION
 
-    def execute(self, merged_gps_data, map_output_file="merged_map.html", display=True):
+    def execute(self, data_dict, map_output_file="merged_map.html", display=True):
+        data = data_dict.get("data", [])
+        metadata = data_dict.get("metadata", {})
+
         # Check if there's GPS data to visualize
-        if not merged_gps_data or len(merged_gps_data) == 0:
+        if not data or len(data) == 0:
             console.print("No GPS data to visualize.", style="bold red")
             return
 
         # Extract the starting point for initializing the map
-        starting_point = merged_gps_data[0]
+        starting_point = data[0]
         lat = starting_point.get("lat")
         lon = starting_point.get("lon")
 
@@ -93,19 +43,55 @@ class VisualizerPlugin(BasePlugin):
         # Add Esri World Imagery (Satellite)
         folium.TileLayer('Esri.WorldImagery').add_to(map_object)
 
+         # Add Google Satellite tiles
+        folium.TileLayer(
+            tiles='https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',  # Satellite tiles
+            attr='Google',
+            name='Google Satellite',
+            overlay=False,
+            control=True
+        ).add_to(map_object)
+
+        # Add Google Maps (road map) tiles
+        folium.TileLayer(
+            tiles='https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',  # Map tiles
+            attr='Google Maps',
+            name='Google Maps',
+            overlay=False,
+            control=True
+        ).add_to(map_object)
+
+        # Add Google Hybrid tiles (Satellite + Labels)
+        folium.TileLayer(
+            tiles='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',  # Hybrid (Satellite + Labels)
+            attr='Google',
+            name='Google Hybrid (Satellite + Labels)',
+            overlay=False,
+            control=True
+        ).add_to(map_object)
+        
         # Add LayerControl so the user can toggle between the tile layers
         folium.LayerControl().add_to(map_object)
-        # folium.TileLayer('Esri.WorldImagery').add_to(map_object)
+        
         # Create PolyLine to connect the points into a line
-        polyline = [(point["lat"], point["lon"]) for point in merged_gps_data]
+        polyline = [(point["lat"], point["lon"]) for point in data]
         folium.PolyLine(locations=polyline, color="blue", weight=2.5).add_to(map_object)
-        # Optionally add markers for start and end points
+        
+        # Add markers for start and end points
         folium.Marker(location=[polyline[0][0], polyline[0][1]], popup="Start", icon=folium.Icon(color='green')).add_to(map_object)
         folium.Marker(location=[polyline[-1][0], polyline[-1][1]], popup="End", icon=folium.Icon(color='red')).add_to(map_object)
 
+        #Add campsite markers
+        for idx, stop_idx in enumerate(metadata.get("stop_indicies", [])):
+            if idx == 0 or idx == len(metadata.get("stop_indicies", [])) - 1:
+                continue
+            stop_point = data[stop_idx]
+           
+            folium.Marker(location=[stop_point["lat"], stop_point["lon"]], popup=f"Campsite {idx}", icon=folium.Icon(color='orange')).add_to(map_object)
+
         # Prepare data for TimestampedGeoJson
         features = []
-        for point in merged_gps_data:
+        for point in data:
             timestamp = datetime.utcfromtimestamp(point["time"] / 1000).isoformat()
             lat = point["lat"]
             lon = point["lon"]
