@@ -133,9 +133,7 @@ class GarminConnectInterface:
                     command_func(self.secondary_data)
                 elif option in self.visualizer_plugins and not self.secondary_data:
                     console.print(Panel.fit(f"No data to visualize. Please run first 2 steps (retrival/processing{self.process_plugins},{self.retrieval_plugins} ot data merging {self.secondary_process_plugins} first.", border_style="bold yellow", style="bold yellow"))
-            
-            ## TODO : Implement a plugin to take merged data and plot it on a map
-            # data_field = Prompt.ask("Please enter the data field to merge (default is geoPolylineDTO):", default='geoPolylineDTO') if idx == 0 else data_field
+       
             except Exception as err:
                 logger.error(err)
                 console.print(f"Error: {traceback.format_exc()}", style="bold red")

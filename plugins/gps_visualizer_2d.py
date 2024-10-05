@@ -11,7 +11,7 @@ console = Console()
 class GPSVisualizer2dPlugin(BasePlugin):
     @property
     def command_key(self) -> str:
-        return "V"
+        return "v"
 
     @property
     def description(self) -> str:
